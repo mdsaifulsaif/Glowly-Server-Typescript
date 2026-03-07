@@ -9,6 +9,10 @@ const { upload } = require("../config/cloudinary");
 
 
 router.post("/register", upload.single("image"), userControllers.registerUser);
+
+router.patch("/update-profile", authMiddleware.protect, upload.single("profileImage"), userControllers.updateUserProfile);
+
+router.get("/profile", authMiddleware.protect, userControllers.getUserProfile);
 router.post("/login", userControllers.loginUser);
 router.get("/all-users", authMiddleware.protect, adminMiddlwarre.isAdmin, userControllers.getAllUsers);
 

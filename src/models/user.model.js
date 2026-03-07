@@ -2,9 +2,19 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    // name: {
+    //   type: String,
+    //   required: [true, "Please add a name"],
+    //   trim: true,
+    // },
+    firstName: {
       type: String,
-      required: [true, "Please add a name"],
+      required: [true, "First name is required"],
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: [true, "Last name is required"],
       trim: true,
     },
     email: {
@@ -32,10 +42,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    phone: {
+      type: String,
+      default: "",
+    },
+
+    shippingAddress: {
+      addressLine: { type: String, default: "" }, //
+      city: { type: String, default: "" },
+      state: { type: String, default: "" },
+      postalCode: { type: String, default: "" },
+      country: { type: String, default: "" },
+    },
   },
   {
-    timestamps: true, 
-  }
+    timestamps: true,
+  },
 );
 
 const User = mongoose.model("User", userSchema);

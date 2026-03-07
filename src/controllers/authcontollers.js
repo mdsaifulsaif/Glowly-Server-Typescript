@@ -3,21 +3,84 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 //   POST /api/auth/register
-const registerUser = async (req, res) => {
- 
-  try {
-    const { name, email, password } = req.body;
+// const registerUser = async (req, res) => {
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please add all fields" });
+//   try {
+//     const { name, email, password } = req.body;
+
+//     if (!name || !email || !password) {
+//       return res.status(400).json({ message: "Please add all fields" });
+//     }
+
+//     const userExists = await userModel.findOne({ email });
+//     if (userExists) {
+//       return res.status(400).json({ message: "User already exists" });
+//     }
+
+//     let imageUrl = "";
+//     if (req.file) {
+//       imageUrl = req.file.path;
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     const user = await userModel.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//       profileImage: imageUrl,
+//     });
+
+//     //make token
+//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+//       expiresIn: "1d",
+//     });
+
+//     res.cookie("token", token, {
+//       httpOnly: true,
+//       secure: true,//false
+//       sameSite: "none",
+//       maxAge: 24 * 60 * 60 * 1000,
+//     });
+
+//     if (user) {
+//       res.status(201).json({
+//         success: true,
+//         message: "User registered successfully",
+//         data: {
+//           _id: user._id,
+//           name: user.name,
+//           email: user.email,
+//           profileImage: user.profileImage,
+//         },
+//       });
+//     } else {
+//       res.status(400).json({ message: "Invalid user data" });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+const registerUser = async (req, res) => {
+  try {
+    const { firstName, lastName, email, password } = req.body;
+
+    if (!firstName || !lastName || !email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please add all fields" });
     }
 
     const userExists = await userModel.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
     }
 
-    let imageUrl = "";
+    let imageUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // ডিফল্ট ইমেজ
     if (req.file) {
       imageUrl = req.file.path;
     }
@@ -26,20 +89,24 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await userModel.create({
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
       profileImage: imageUrl,
     });
 
-    //make token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      },
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,//false
+      secure: process.env.NODE_ENV === "production", // প্রোডাকশনে true হবে
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -50,20 +117,89 @@ const registerUser = async (req, res) => {
         message: "User registered successfully",
         data: {
           _id: user._id,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
           profileImage: user.profileImage,
+          role: user.role,
         },
       });
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      res.status(400).json({ success: false, message: "Invalid user data" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-//   POST /api/auth/register
+// update profile
+
+const updateUserProfile = async (req, res) => {
+  try {
+    // তোমার মিডলওয়্যার অনুযায়ী req.user থেকে আইডি নিতে হবে
+    const userId = req.user._id;
+
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      addressLine,
+      city,
+      state,
+      postalCode,
+      country,
+      currentPassword,
+      newPassword,
+    } = req.body;
+
+    // পাসওয়ার্ড চেক করার জন্য আলাদাভাবে পাসওয়ার্ড সিলেক্ট করা
+    const user = await userModel.findById(userId).select("+password");
+
+    // প্রোফাইল তথ্য আপডেট
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+
+    // ইমেজ আপডেট
+    if (req.file) {
+      user.profileImage = req.file.path;
+    }
+
+    // শিপিং অ্যাড্রেস আপডেট
+    if (addressLine || city || state || postalCode || country) {
+      user.shippingAddress = {
+        addressLine: addressLine || user.shippingAddress?.addressLine,
+        city: city || user.shippingAddress?.city,
+        state: state || user.shippingAddress?.state,
+        postalCode: postalCode || user.shippingAddress?.postalCode,
+        country: country || user.shippingAddress?.country,
+      };
+    }
+
+    // পাসওয়ার্ড পরিবর্তন লজিক
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Current password mismatch" });
+      }
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully!",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 const loginUser = async (req, res) => {
   try {
@@ -168,6 +304,29 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    console.log(userId);
+
+    const user = await userModel.findById(userId).select("-password");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getLoggedUser = async (req, res) => {
   try {
     res.status(200).json({
@@ -181,31 +340,32 @@ const getLoggedUser = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-  
-    res.cookie('token', '', {
+    res.cookie("token", "", {
       httpOnly: true,
-      expires: new Date(0), 
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: 'strict',
+      expires: new Date(0),
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
     });
 
     res.status(200).json({
       success: true,
-      message: 'Logged out successfully'
+      message: "Logged out successfully",
     });
   } catch (error) {
     console.error("Logout Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error during logout'
+      message: "Server error during logout",
     });
   }
 };
 
 module.exports = {
   registerUser,
+  updateUserProfile,
+  getUserProfile,
   loginUser,
   getAllUsers,
   getLoggedUser,
-  logout
+  logout,
 };
