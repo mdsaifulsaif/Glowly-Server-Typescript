@@ -13,22 +13,22 @@ const productSchema = new mongoose.Schema(
     },
 
     // Original Price
-    regularPrice: {
-      type: Number,
-      required: [true, "Regular price is required"],
-    },
+    // regularPrice: {
+    //   type: Number,
+    //   required: [true, "Regular price is required"],
+    // },
 
     // Selling Price (The actual price after discount)
     salePrice: {
       type: Number,
       required: [true, "Sale price is required"],
-      validate: {
-        validator: function (value) {
-          // Ensuring sale price isn't higher than original price
-          return value <= this.regularPrice;
-        },
-        message: "Sale price cannot be higher than regular price",
-      },
+      // validate: {
+      //   validator: function (value) {
+      //     // Ensuring sale price isn't higher than original price
+      //     return value <= this.regularPrice;
+      //   },
+      //   message: "Sale price cannot be higher than regular price",
+      // },
     },
 
     // Main image for Shop Page (Single String)
@@ -47,6 +47,10 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: [true, "Product category is required"],
+    },
+    costPrice: {
+      type: Number,
+      required: [true, "Sale price is required"],
     },
 
     stock: {

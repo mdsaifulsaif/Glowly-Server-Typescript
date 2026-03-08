@@ -8,5 +8,7 @@ const Product = require('../models/product.model');
 router.post('/order-create', protect,  orderControllers.createOrder);
 router.get('/all-orders', protect,   orderControllers.getAllOrders);
 router.get("/getUserOrders", protect, orderControllers.getUserOrders)
-router.get("/getOrderById/:id", protect, orderControllers.getOrderById);
+router.get("/getOrderById/:id", protect, orderControllers.getOrderByUserId);
+router.put("/update-status/:orderId", protect, orderControllers.updateOrderStatus);
+router.get("/order-details/:orderId", orderControllers.getOrderById);
 module.exports = router;

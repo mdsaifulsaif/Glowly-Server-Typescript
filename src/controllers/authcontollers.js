@@ -80,7 +80,7 @@ const registerUser = async (req, res) => {
         .json({ success: false, message: "User already exists" });
     }
 
-    let imageUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // ডিফল্ট ইমেজ
+    let imageUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; 
     if (req.file) {
       imageUrl = req.file.path;
     }
@@ -96,17 +96,14 @@ const registerUser = async (req, res) => {
       profileImage: imageUrl,
     });
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-      },
-    );
+ 
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // প্রোডাকশনে true হবে
+      secure: true,//false
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     });

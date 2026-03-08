@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", 
+    ref: "User",
     required: true,
   },
   firstName: { type: String, required: true },
@@ -16,7 +16,7 @@ const orderSchema = new mongoose.Schema({
   postalCode: { type: String, required: true },
   country: { type: String, required: true },
   shippingMethod: { type: String, required: true },
-  totalAmount: { type: String, required: true }, // Input-e $ sign thakle String, nahole Number hobe
+  totalAmount: { type: String, required: true },
   cartItems: [
     {
       _id: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
@@ -27,7 +27,18 @@ const orderSchema = new mongoose.Schema({
       thumbnail: { type: String },
     },
   ],
-  status: { type: String, default: "Pending" },
+  status: {
+    type: String,
+    default: "Pending",
+    enum: [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Returned",
+    ],
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

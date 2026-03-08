@@ -5,19 +5,23 @@ const authRoutes = require("./routes/authRoutes");
 const imageUploadRoutes = require("./routes/imageupuloadRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
-const reviewRoutes = require("./routes/reviewRoutes")
-const orderRoutes = require("./routes/orderRoutes")
-const subscribeRoutes = require("./routes/subscribeRoutes")
+const reviewRoutes = require("./routes/reviewRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const subscribeRoutes = require("./routes/subscribeRoutes");
 
 const app = express();
 
 // Middleware
 app.use(
   cors({
-    origin: [  "http://localhost:5173", "http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5173",
+      "https://glowly-frontend-react.vercel.app",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 app.use(cookieParser());
