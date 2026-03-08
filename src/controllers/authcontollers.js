@@ -341,7 +341,8 @@ const logout = async (req, res) => {
       httpOnly: true,
       expires: new Date(0),
       secure: true,
-      sameSite: "strict",
+      // sameSite: "strict",
+      sameSite: "none",
     });
 
     res.status(200).json({
