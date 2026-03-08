@@ -133,7 +133,7 @@ const registerUser = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   try {
-    // তোমার মিডলওয়্যার অনুযায়ী req.user থেকে আইডি নিতে হবে
+    
     const userId = req.user._id;
 
     const {
@@ -150,21 +150,21 @@ const updateUserProfile = async (req, res) => {
       newPassword,
     } = req.body;
 
-    // পাসওয়ার্ড চেক করার জন্য আলাদাভাবে পাসওয়ার্ড সিলেক্ট করা
+    
     const user = await userModel.findById(userId).select("+password");
 
-    // প্রোফাইল তথ্য আপডেট
+ 
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (email) user.email = email;
     if (phone) user.phone = phone;
 
-    // ইমেজ আপডেট
+   
     if (req.file) {
       user.profileImage = req.file.path;
     }
 
-    // শিপিং অ্যাড্রেস আপডেট
+  
     if (addressLine || city || state || postalCode || country) {
       user.shippingAddress = {
         addressLine: addressLine || user.shippingAddress?.addressLine,
@@ -219,7 +219,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id}, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
