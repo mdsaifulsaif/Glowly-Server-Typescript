@@ -80,7 +80,7 @@ const registerUser = async (req, res) => {
         .json({ success: false, message: "User already exists" });
     }
 
-    let imageUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; 
+    let imageUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
     if (req.file) {
       imageUrl = req.file.path;
     }
@@ -96,14 +96,13 @@ const registerUser = async (req, res) => {
       profileImage: imageUrl,
     });
 
- 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,//false
+      secure: true, //false
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -133,7 +132,6 @@ const registerUser = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   try {
-    
     const userId = req.user._id;
 
     const {
@@ -150,21 +148,17 @@ const updateUserProfile = async (req, res) => {
       newPassword,
     } = req.body;
 
-    
     const user = await userModel.findById(userId).select("+password");
 
- 
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (email) user.email = email;
     if (phone) user.phone = phone;
 
-   
     if (req.file) {
       user.profileImage = req.file.path;
     }
 
-  
     if (addressLine || city || state || postalCode || country) {
       user.shippingAddress = {
         addressLine: addressLine || user.shippingAddress?.addressLine,
@@ -219,7 +213,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id}, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
@@ -360,21 +354,29 @@ const getLoggedUser = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    
+   
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
+    // কুকি ক্লিয়ার করা
     res.clearCookie("token", {
       httpOnly: true,
-      secure: true,
+      secure: true, // Vercel-এ অবশ্যই true হতে হবে
       sameSite: "none",
-      path: "/", 
+      path: "/",
     });
 
-    
+    // বিকল্প হিসেবে কুকি এক্সপায়ার করে দেওয়া (Double Safety)
     res.cookie("token", "", {
       httpOnly: true,
       expires: new Date(0),
       secure: true,
       sameSite: "none",
-      path: "/", 
+      path: "/",
     });
 
     return res.status(200).json({
@@ -389,7 +391,6 @@ const logout = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   registerUser,
   updateUserProfile,
