@@ -335,17 +335,49 @@ const getLoggedUser = async (req, res) => {
   }
 };
 
+// const logout = async (req, res) => {
+//   try {
+//     res.cookie("token", "", {
+//       httpOnly: true,
+//       expires: new Date(0),
+//       secure: true,
+//       // sameSite: "strict",
+//       sameSite: "none",
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Logged out successfully",
+//     });
+//   } catch (error) {
+//     console.error("Logout Error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error during logout",
+//     });
+//   }
+// };
+
 const logout = async (req, res) => {
   try {
+    
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/", 
+    });
+
+    
     res.cookie("token", "", {
       httpOnly: true,
       expires: new Date(0),
       secure: true,
-      // sameSite: "strict",
       sameSite: "none",
+      path: "/", 
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Logged out successfully",
     });
